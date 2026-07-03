@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+RUN find src -type f \( -name '*.js' -o -name '*.css' \) -exec sed -i 's/\r$//' {} +
 RUN npm run build
 
 FROM nginx:1.21-alpine
