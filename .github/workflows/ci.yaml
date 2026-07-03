@@ -29,11 +29,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Archive node_modules
+        run: tar -czf node_modules.tar.gz node_modules
+
       - name: Upload node_modules
         uses: actions/upload-artifact@v4
         with:
           name: node-modules-${{ github.run_id }}
-          path: node_modules
+          path: node_modules.tar.gz
           retention-days: 1
 
   lint:
@@ -52,7 +55,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-modules-${{ github.run_id }}
-          path: node_modules
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Run linter
         run: npm run lint
@@ -73,7 +78,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-modules-${{ github.run_id }}
-          path: node_modules
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Run tests
         env:
@@ -97,7 +104,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-modules-${{ github.run_id }}
-          path: node_modules
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Build project
         env:
