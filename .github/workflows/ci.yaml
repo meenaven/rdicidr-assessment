@@ -29,11 +29,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Cache node_modules
-        uses: actions/cache/save@v3
+      - name: Archive node_modules
+        run: tar -czf node_modules.tar.gz node_modules
+
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          name: node-modules-${{ github.run_id }}
+          path: node_modules.tar.gz
+          retention-days: 1
 
   lint:
     needs: [install]
@@ -48,10 +52,12 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v3
+        uses: actions/download-artifact@v4
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          name: node-modules-${{ github.run_id }}
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Run linter
         run: npm run lint
@@ -69,14 +75,17 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v3
+        uses: actions/download-artifact@v4
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          name: node-modules-${{ github.run_id }}
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Run tests
         env:
           CI: true
+          REACT_APP_API_URL: https://api.rdicidr.example.com
         run: npm run test
 
   build:
@@ -92,10 +101,14 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Restore node_modules
-        uses: actions/cache/restore@v3
+        uses: actions/download-artifact@v4
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          name: node-modules-${{ github.run_id }}
+
+      - name: Extract node_modules
+        run: tar -xzf node_modules.tar.gz
 
       - name: Build project
+        env:
+          REACT_APP_API_URL: https://api.rdicidr.example.com
         run: npm run build
